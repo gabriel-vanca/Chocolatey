@@ -28,10 +28,10 @@
 # Force use of TLS 1.2 for all downloads.
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-[Boolean]$LocalRepository = $False
+[Switch]$LocalRepository = $False
 [string]$LocalRepositoryPath = "http://hercules.cerberus.local:8624/nuget/Hercules/"
 [string]$LocalRepositoryName = "Hercules.cerberus.local"
-[Boolean]$DisableCommunityRepository = $False
+[Switch]$DisableCommunityRepository = $False
 
 
 Write-Host "REMINDER: This is a demo of how to install and
@@ -58,13 +58,13 @@ foreach ($machineName in $availableMachines) {
 Write-Host "Type the name of the machine you are deploying."
 $machineElected = Read-Host
 while($availableMachines -notcontains $machineElected) {
-    Write-Error ("Machine name is not valid. Please type a valid name.")
+    Write-Host ("Machine name is not valid. Please type a valid name.") -ForegroundColor DarkRed
     $machineElected = Read-Host
 }
 
 $localRepositoryOption = Read-Host -Prompt "Would you like to use $LocalRepositoryName as the main repository for Chocolatey (yes/no/custom)?"
 while($localRepositoryOption -ne "yes" -and $localRepositoryOption -ne "no" -and $localRepositoryOption -ne "custom") {
-    Write-Error ("Option is not valid. Please choose a valid option.")
+    Write-Host ("Option is not valid. Please choose a valid option.") -ForegroundColor DarkRed
     $localRepositoryOption = Read-Host -Prompt "Would you like to use $LocalRepositoryName as the main repository for Chocolatey (yes/no/custom)?"
 }
 
@@ -82,9 +82,9 @@ if($LocalRepositoryOption -eq "n") {
         $LocalRepositoryName = Read-Host -Prompt "Type a name for the repository"
     }
 
-    $DisableCommunityRepositoryOption = Read-Host -Prompt "Would you like to disable ?"
+    $DisableCommunityRepositoryOption = Read-Host -Prompt "Would you like to disable the Chocolatey Community Repository?"
     while($DisableCommunityRepositoryOption -ne "yes" -and $DisableCommunityRepositoryOption -ne "no") {
-        Write-Error ("Option is not valid. Please choose a valid option.")
+        Write-Host ("Option is not valid. Please choose a valid option.") -ForegroundColor DarkRed
         $DisableCommunityRepositoryOption = Read-Host -Prompt "Would you like to disable the Chocolatey Community Repository?"
     }
 

@@ -63,10 +63,10 @@
 
 
 param(
-        [Boolean]$LocalRepository = $false,
+        [Switch]$LocalRepository = $false,
         [string]$LocalRepositoryPath = "",
         [string]$LocalRepositoryName = "",
-        [Boolean]$DisableCommunityRepository = $false
+        [Switch]$DisableCommunityRepository = $false
      )
 
 
