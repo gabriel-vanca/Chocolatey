@@ -118,11 +118,11 @@ choco feature enable -n allowGlobalConfirmation -y
 # Configure Sources. Higher values means higher priority.
 if($LocalRepository) {
     Write-Host "Trying to use a local repository"
-    if(String.IsNullOrEmpty($LocalRepositoryPath)) {
+    if([string]::IsNullOrEmpty($LocalRepositoryPath)) {
         Write-Error "The local repository path is null or empty."
         $LocalRepository = $False
     } else {
-        if(String.IsNullOrEmpty($LocalRepositoryName)) {
+        if([string]::IsNullOrEmpty($LocalRepositoryName)) {
             Write-Error "The local repository name is null or empty."
             $LocalRepository = $False
         } else {
