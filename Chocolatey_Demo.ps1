@@ -28,10 +28,10 @@
 # Force use of TLS 1.2 for all downloads.
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-[Boolean]$LocalRepository = $false
+[Boolean]$LocalRepository = $False
 [string]$LocalRepositoryPath = "http://hercules.cerberus.local:8624/nuget/Hercules/"
 [string]$LocalRepositoryName = "Hercules.cerberus.local"
-[Boolean]$DisableCommunityRepository = $false
+[Boolean]$DisableCommunityRepository = $False
 
 
 Write-Host "REMINDER: This is a demo of how to install and
@@ -70,28 +70,29 @@ while($localRepositoryOption -ne "yes" -and $localRepositoryOption -ne "no" -and
 
 if($LocalRepositoryOption -eq "n") {
     $LocalRepository = $False
+    $DisableCommunityRepository = $False
 } else {
     $LocalRepository = $True
-}
 
-if($localRepositoryOption -eq "custom") {
-    Write-Host "Type the custom path of the repository you want to use."
-    Write-Host "Example 1: http://10.10.10.1:8624/nuget/Thoth/"
-    Write-Host "Example 2: http://hercules.cerberus.local:8624/nuget/Hercules/"
-    $LocalRepositoryPath = Read-Host -Prompt "Type repository path"
-    $LocalRepositoryName = Read-Host -Prompt "Type a name for the repository"
-}
+    if($localRepositoryOption -eq "custom") {
+        Write-Host "Type the custom path of the repository you want to use."
+        Write-Host "Example 1: http://10.10.10.1:8624/nuget/Thoth/"
+        Write-Host "Example 2: http://hercules.cerberus.local:8624/nuget/Hercules/"
+        $LocalRepositoryPath = Read-Host -Prompt "Type repository path"
+        $LocalRepositoryName = Read-Host -Prompt "Type a name for the repository"
+    }
 
-$DisableCommunityRepositoryOption = Read-Host -Prompt "Would you like to disable ?"
-while($DisableCommunityRepositoryOption -ne "yes" -and $DisableCommunityRepositoryOption -ne "no") {
-    Write-Error ("Option is not valid. Please choose a valid option.")
     $DisableCommunityRepositoryOption = Read-Host -Prompt "Would you like to disable ?"
-}
+    while($DisableCommunityRepositoryOption -ne "yes" -and $DisableCommunityRepositoryOption -ne "no") {
+        Write-Error ("Option is not valid. Please choose a valid option.")
+        $DisableCommunityRepositoryOption = Read-Host -Prompt "Would you like to disable the Chocolatey Community Repository?"
+    }
 
-if($DisableCommunityRepositoryOption -eq "yes") {
-    $DisableCommunityRepository = $True
-} else {
-    $DisableCommunityRepository = $False
+    if($DisableCommunityRepositoryOption -eq "yes") {
+        $DisableCommunityRepository = $True
+    } else {
+        $DisableCommunityRepository = $False
+    }
 }
 
 
