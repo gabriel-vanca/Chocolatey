@@ -102,7 +102,7 @@ $scriptPath = "https://raw.githubusercontent.com/gabriel-vanca/Chocolatey/main/C
 $WebClient = New-Object Net.WebClient
 $deploymentScript = $WebClient.DownloadString($scriptPath)
 $deploymentScript = [Scriptblock]::Create($deploymentScript)
-Invoke-Command -ScriptBlock $deploymentScript -ArgumentList ($LocalRepository_, $LocalRepositoryPath_, $LocalRepositoryName_, $DisableCommunityRepository__) -NoNewScope
+Invoke-Command -ScriptBlock $deploymentScript -ArgumentList ($LocalRepository_, $LocalRepositoryPath_, $LocalRepositoryName_, $DisableCommunityRepository_) -NoNewScope
 
 $date = Get-Date
 Write-Host "Deploying machine '$machineElected' on '$date' "

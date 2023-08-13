@@ -3,13 +3,13 @@
     Install and configures the popular Windows package manager Chocolatey.
 .DESCRIPTION
 	1. Checks whether chocolatey is already installed.
-            Terminates the script if it is so as to avoid misconfiguring.
+        - Terminates the script if it is so as to avoid misconfiguring.
     2. If it isn't installed yet, it install chocolatey.
     3. Verifies if installation has been succesfull
     4. Configures the default repository as per set parameters (see below)
     5. Sets an auto-update configuration
     6. Installs a package cache cleaning utility
-    7. Installs a GUI tool
+    7. Installs the Chocolatey GUI tool
 
     Deployment tested on:
         - Windows 10
@@ -30,7 +30,6 @@
 .PARAMETER LocalRepositoryName
     (Optional)
 	Specifies the name of the local repository.
-    Leave blank if using the Chocolatey Community Repository.
 .PARAMETER DisableCommunityRepository
     (Optional)
 	Allows disabling the Community Repository entirely.
@@ -41,8 +40,8 @@
     To use the default Chocolatey Community Repository, run this:
 	    PS> ./Chocolatey_Deploy
     To use a local repository, run either of these:
-        PS> ./Chocolatey_Deploy $True "http://10.10.10.1:8624/nuget/Thoth/" "THOTH"
-        PS> ./Chocolatey_Deploy $True "http://hercules.cerberus.local:8624/nuget/Hercules/" "HERCULES"
+        PS> ./Chocolatey_Deploy $True "http://10.10.10.1:8624/nuget/Thoth/" "THOTH" $False
+        PS> ./Chocolatey_Deploy $True "http://hercules.cerberus.local:8624/nuget/Hercules/" "HERCULES" $False
     The exact port and form of the path for the local repository will depend on
         the repository software you are using.
     In the examples above, the repository software used is the Inedo ProGet free software.
@@ -134,7 +133,7 @@ if($LocalRepository) {
                     choco source disable -n=chocolatey
                     Write-Host "Disabled Chocolatey Community Repository"
                 }
-                
+
             } catch {
                 Write-Host "*****************************************************************" -ForegroundColor DarkRed
                 Write-Host "Error in line $($_.InvocationInfo.ScriptLineNumber): $($Error[0])" -ForegroundColor DarkRed
