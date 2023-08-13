@@ -110,7 +110,7 @@ if (Test-Path "$chocoInstallPath") {
     }
 }
 
-Write-Host "Configuring Chocolatey"
+Write-Host "Configuring Chocolatey Sources"
 
 # Auto confirm package installations (no need to pass -y)
 choco feature enable -n allowGlobalConfirmation -y
@@ -146,6 +146,8 @@ Write-Host "Printing Chocolatey sources list:"
 choco source list
 Write-Host "[END LIST]"
 
+Write-Host "Configuring Chocolatey Updates and Cleaning"
+
 <#
  Creates a Windows Scheduled Task to run "choco upgrade all -y" with enhanced options at a time and frequency you specify
  And because sometimes package installations go wrong, it will also create a Windows Scheduled Task to
@@ -157,6 +159,8 @@ choco install choco-upgrade-all-at -y --params "'/DAILY:yes /TIME:03:00 /ABORTTI
 # Set it and forget it! Choco-Cleaner cleans up your Chocolatey installation
 # every Sunday at 11 PM in the background so you don't have to be bothered with it.
 choco install choco-cleaner -y
+
+Write-Host "Installing and Configuring Chocolatey GUI"
 
 # Chocolatey GUI
 choco install chocolateygui -y --params "'/Global /ShowConsoleOutput=$true /PreventAutomatedOutdatedPackagesCheck=$true /DefaultToTileViewForLocalSource=$false /DefaultToTileViewForRemoteSource=$false /DefaultToDarkMode=$true'"
