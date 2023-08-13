@@ -2,6 +2,15 @@
 
 This is a guided script to install and config chocolatey and deploy packages with chocolatey.
 
+🪟This deployment solution was tested on:
+
+* ✅ Windows 10
+* ✅Windows 11
+* ✅Windows 11 Sandbox
+* ✅Windows Server 2019
+* ✅Windows Server 2022
+* ✅Windows Server 2022 vNext (Windows Server 2025)
+
 ## ⚒️Step 1: Deploy Chocolatey
 
 ```
