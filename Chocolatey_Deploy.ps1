@@ -126,14 +126,22 @@ if($LocalRepository) {
             Write-Error "The local repository name is null or empty."
             $LocalRepository = $False
         } else {
-            choco source add -n=$LocalRepositoryName -s=$LocalRepositoryPath --priority=10
-            Write-Host "Using Chocolatey local repository $LocalRepositoryName as main source."
+            try{
+                choco source add -n $LocalRepositoryName -s $LocalRepositoryPath --priority=10
+                Write-Host "Using Chocolatey local repository $LocalRepositoryName as main source."
 
-            if($DisableCommunityRepository) {
-                choco source disable -n=chocolatey
-                Write-Host "Disabled Chocolatey Community Repository"
+                if($DisableCommunityRepository) {
+                    choco source disable -n=chocolatey
+                    Write-Host "Disabled Chocolatey Community Repository"
+                }
+                
+            } catch {
+                Write-Host "*****************************************************************" -ForegroundColor DarkRed
+                Write-Host "Error in line $($_.InvocationInfo.ScriptLineNumber): $($Error[0])" -ForegroundColor DarkRed
+                Write-Host "Failed to add local repository and/or disable community repository." -ForegroundColor DarkRed
+                Write-Host "*****************************************************************" -ForegroundColor DarkRed
+                $LocalRepository = $False
             }
-
         }
     }
 }
