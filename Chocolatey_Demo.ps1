@@ -28,10 +28,10 @@
 # Force use of TLS 1.2 for all downloads.
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-[Switch]$LocalRepository = $False
-[string]$LocalRepositoryPath = "http://hercules.cerberus.local:8624/nuget/Hercules/"
-[string]$LocalRepositoryName = "Hercules.cerberus.local"
-[Switch]$DisableCommunityRepository = $False
+[Switch]$LocalRepository_ = $False
+[string]$LocalRepositoryPath_ = "http://hercules.cerberus.local:8624/nuget/Hercules/"
+[string]$LocalRepositoryName_ = "Hercules.cerberus.local"
+[Switch]$DisableCommunityRepository_ = $False
 
 
 Write-Host "REMINDER: This is a demo of how to install and
@@ -62,36 +62,36 @@ while($availableMachines -notcontains $machineElected) {
     $machineElected = Read-Host
 }
 
-$localRepositoryOption = Read-Host -Prompt "Would you like to use $LocalRepositoryName as the main repository for Chocolatey (yes/no/custom)?"
+$localRepositoryOption = Read-Host -Prompt "Would you like to use $LocalRepositoryName_ as the main repository for Chocolatey (yes/no/custom)?"
 while($localRepositoryOption -ne "yes" -and $localRepositoryOption -ne "no" -and $localRepositoryOption -ne "custom") {
     Write-Host ("Option is not valid. Please choose a valid option.") -ForegroundColor DarkRed
-    $localRepositoryOption = Read-Host -Prompt "Would you like to use $LocalRepositoryName as the main repository for Chocolatey (yes/no/custom)?"
+    $localRepositoryOption = Read-Host -Prompt "Would you like to use $LocalRepositoryName_ as the main repository for Chocolatey (yes/no/custom)?"
 }
 
 if($LocalRepositoryOption -eq "n") {
-    $LocalRepository = $False
-    $DisableCommunityRepository = $False
+    $LocalRepository_ = $False
+    $DisableCommunityRepository_ = $False
 } else {
-    $LocalRepository = $True
+    $LocalRepository_ = $True
 
     if($localRepositoryOption -eq "custom") {
         Write-Host "Type the custom path of the repository you want to use."
         Write-Host "Example 1: http://10.10.10.1:8624/nuget/Thoth/"
         Write-Host "Example 2: http://hercules.cerberus.local:8624/nuget/Hercules/"
-        $LocalRepositoryPath = Read-Host -Prompt "Type repository path"
-        $LocalRepositoryName = Read-Host -Prompt "Type a name for the repository"
+        $LocalRepositoryPath_ = Read-Host -Prompt "Type repository path"
+        $LocalRepositoryName_ = Read-Host -Prompt "Type a name for the repository"
     }
 
-    $DisableCommunityRepositoryOption = Read-Host -Prompt "Would you like to disable the Chocolatey Community Repository?"
-    while($DisableCommunityRepositoryOption -ne "yes" -and $DisableCommunityRepositoryOption -ne "no") {
+    $DisableCommunityRepository_Option = Read-Host -Prompt "Would you like to disable the Chocolatey Community Repository? (yes/no)"
+    while($DisableCommunityRepository_Option -ne "yes" -and $DisableCommunityRepository_Option -ne "no") {
         Write-Host ("Option is not valid. Please choose a valid option.") -ForegroundColor DarkRed
-        $DisableCommunityRepositoryOption = Read-Host -Prompt "Would you like to disable the Chocolatey Community Repository?"
+        $DisableCommunityRepository_Option = Read-Host -Prompt "Would you like to disable the Chocolatey Community Repository? (yes/no)"
     }
 
-    if($DisableCommunityRepositoryOption -eq "yes") {
-        $DisableCommunityRepository = $True
+    if($DisableCommunityRepository_Option -eq "yes") {
+        $DisableCommunityRepository_ = $True
     } else {
-        $DisableCommunityRepository = $False
+        $DisableCommunityRepository_ = $False
     }
 }
 
@@ -102,7 +102,7 @@ $scriptPath = "https://raw.githubusercontent.com/gabriel-vanca/Chocolatey/main/C
 $WebClient = New-Object Net.WebClient
 $deploymentScript = $WebClient.DownloadString($scriptPath)
 $deploymentScript = [Scriptblock]::Create($deploymentScript)
-Invoke-Command -ScriptBlock $deploymentScript -ArgumentList ($LocalRepository, $LocalRepositoryPath, $LocalRepositoryName, $DisableCommunityRepository) -NoNewScope
+Invoke-Command -ScriptBlock $deploymentScript -ArgumentList ($LocalRepository_, $LocalRepositoryPath_, $LocalRepositoryName_, $DisableCommunityRepository__) -NoNewScope
 
 $date = Get-Date
 Write-Host "Deploying machine '$machineElected' on '$date' "
