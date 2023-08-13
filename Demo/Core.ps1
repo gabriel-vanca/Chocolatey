@@ -16,7 +16,7 @@ if($osInfo.ProductType -eq 1) {
 
     Write-Host "Installing Cloud and File transfer software"
     choco install dropbox -y
-    choco install resilio-sync-home -y
+    choco install resilio-sync-home -y  --ignore-checksums
 
     Write-Host "Installing Content Delivery software"
     choco install plex -y
