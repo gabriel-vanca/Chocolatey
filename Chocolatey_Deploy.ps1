@@ -144,6 +144,7 @@ if($LocalRepository) {
         }
     }
 }
+
 if($LocalRepository -eq $False) {
     Write-Host "Using Chocolatey Community Repository as main source."
     Write-Host "Note that if you have multiple machines/VMs running on your local network, `n     you will run into the Chocolatey Community Repository traffic limit." -ForegroundColor DarkYellow
