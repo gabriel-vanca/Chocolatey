@@ -79,7 +79,7 @@ $chocoInstallPath = "$Env:ProgramData/chocolatey/choco.exe"
 if (Test-Path "$chocoInstallPath") {
     Write-Error "Chocolatey is already installed. Terminating script in 20 seconds..."
     Start-Sleep -Seconds 20
-    Exit
+    Return
 } else {
     Write-Host "No existing Chocolatey installation found. Beginning installation."
 
@@ -103,9 +103,8 @@ if (Test-Path "$chocoInstallPath") {
         Write-Host "Chocolatey installation succesful" -ForegroundColor DarkGreen
     } else {
         Write-Host "Chocolatey installation failure" -ForegroundColor DarkRed
-        Write-Host "Terminating script in 30 seconds..." -ForegroundColor DarkRed
-        Start-Sleep -Seconds 30
-        Exit
+        Start-Sleep -Seconds 5
+        throw "Chocolatey installation failure"
     }
 }
 
