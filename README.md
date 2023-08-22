@@ -85,7 +85,7 @@ Invoke-Command -ScriptBlock $deploymentScript -ArgumentList ($False, "", "", $Fa
 
 ### ⚠️Troubleshooting: Running Scripts is Disabled
 
-You might encounter the following error:
+You might encounter the following error on Windows 10/11 system:
 
 > *C:\temp\.\Script.ps1 cannot be loaded because running scripts is disabled on this system. For more information, see about_Execution_Policies at https://go.microsoft.com/fwlink/?LinkID=135170*
 
@@ -94,6 +94,39 @@ Run the following to solve this problem:
 ```
 Set-ExecutionPolicy RemoteSigned
 ```
+
+The `RemoteSigned` execution policy is the default policy on Windows Server deployments. 
+
+* It requires a digital signature from a trusted publisher on scripts and configuration files that are downloaded from the internet.
+* It doesn't require digital signatures on scripts that are written on the local computer and not downloaded from the internet. Any unblocked scripts downloaded from the internet are treated as local scripts and therefore do not require a trusted signature.
+
+You will need to also make sure you have unblocked any scripts you are running (see below instructions on how to do that). This is only necessary if you download the files directly from GitHub through a web browser. Using the `Deploy Script via Network` method above does not mark the scripts downloaded from GitHub as blocked. Same is true if you just copy+paste the script into your terminal window.
+
+Alternatively, you can set your execution policy temporarily to Bypass for the current terminal session. This will not block anything that runs in the current shell session and therefore will not require you to unblock anything.
+
+```
+Set-ExecutionPolicy Bypass -Scope Process
+```
+
+### ⚠️Troubleshooting: Script is Blocked
+
+Files downloaded from the internet via a web browser are typically marked as blocked. That means that the RemoteSigned execution policy will expect them to be signed in order for them to be run. However, by unblocking them, they will be treated as scripts written locally and therefore not requiring a trusted signature.
+
+The best method to unblock the files is by unblocking the .zip archive immediately after downloading it from GitHub and before extraction:
+
+```
+Unblock-File -Path "D:\Downloads\Chocolatey.zip"
+```
+
+Alternatively, you can unblock the files after extraction recursively:
+
+```
+Get-ChildItem "D:\Downloads\Chocolatey" -recurse | Unblock-File
+```
+
+You can also unblock the archives/the extracted files from the Properties menu by ticking the Unblock option and clicking OK or Apply:
+
+![1692737295733](image/README/1692737295733.png)
 
 ## 🔐Step 2: Deploy Local Chocolatey Repository (Optional)
 
