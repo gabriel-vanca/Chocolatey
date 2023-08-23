@@ -86,9 +86,12 @@ Write-Host "Starting proceedings"
 # Expected path of the choco.exe file.
 $chocoInstallPath = "$Env:ProgramData/chocolatey/choco.exe"
 if (Test-Path "$chocoInstallPath") {
-    Write-Error "Chocolatey is already installed. Terminating script in 20 seconds..."
-    Start-Sleep -Seconds 20
-    Return
+    Write-Host ""
+    Write-Error "Chocolatey is already installed."
+    Write-Host ""
+    Write-Host ""
+    Start-Sleep -Seconds 7
+    throw "Chocolatey is already installed."
 } else {
     Write-Host "No existing Chocolatey installation found. Beginning installation."
 
