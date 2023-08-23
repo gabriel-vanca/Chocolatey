@@ -76,9 +76,11 @@ param(
 
 Write-Host "Running with the following paramters:"
 Write-Host "LocalRepository: $LocalRepository"
-Write-Host "LocalRepositoryPath: $LocalRepositoryPath"
-Write-Host "LocalRepositoryName: $LocalRepositoryName"
-Write-Host "DisableCommunityRepository: $DisableCommunityRepository"
+if ($LocalRepository -eq $True) {
+    Write-Host "LocalRepositoryPath: $LocalRepositoryPath"
+    Write-Host "LocalRepositoryName: $LocalRepositoryName"
+    Write-Host "DisableCommunityRepository: $DisableCommunityRepository"
+}
 Write-Host "Starting proceedings"
 
 # Expected path of the choco.exe file.
