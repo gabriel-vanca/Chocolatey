@@ -68,7 +68,7 @@ while($localRepositoryOption -ne "yes" -and $localRepositoryOption -ne "no" -and
     $localRepositoryOption = Read-Host -Prompt "Would you like to use $LocalRepositoryName_ as the main repository for Chocolatey (yes/no/custom)?"
 }
 
-if($LocalRepositoryOption -eq "n") {
+if($LocalRepositoryOption -eq "no") {
     $LocalRepository_ = $False
     $DisableCommunityRepository_ = $False
 } else {

@@ -1,4 +1,4 @@
-@REM This can be used to get around the Execution Policy and blocked files limitations
+:: This can be used to get around the Execution Policy and blocked files limitations
 
 @echo on
 
