@@ -60,14 +60,13 @@
 	Author: Gabriel Vanca
 #>
 
-
+[CmdletBinding()]
 param(
-        [Switch]$LocalRepository = $false,
-        [string]$LocalRepositoryPath = "",
-        [string]$LocalRepositoryName = "",
-        [Switch]$DisableCommunityRepository = $false
-     )
-
+    [Parameter(Mandatory = $False)] [Switch]$LocalRepository = $false,
+    [Parameter(Mandatory = $False)] [String]$LocalRepositoryPath,
+    [Parameter(Mandatory = $False)] [String]$LocalRepositoryName,
+    [Parameter(Mandatory = $False)] [Switch]$DisableCommunityRepository = $false
+)
 
 #Requires -RunAsAdministrator
 
