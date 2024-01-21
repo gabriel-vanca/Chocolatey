@@ -184,4 +184,4 @@ Write-Host "Installing and Configuring Chocolatey GUI"
 # Chocolatey GUI
 choco install chocolateygui -y --params "'/Global /ShowConsoleOutput=$true /PreventAutomatedOutdatedPackagesCheck=$true /DefaultToTileViewForLocalSource=$false /DefaultToTileViewForRemoteSource=$false /DefaultToDarkMode=$true'"
 
-Write-Host "Chocolatey Configuration Completed"
+Write-Host "Chocolatey configuration completed."
