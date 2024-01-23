@@ -4,7 +4,7 @@ This is a guided script to install and config chocolatey and deploy packages wit
 
 🪟This deployment solution was tested on:
 
-* ✅ Windows 10
+* ✅Windows 10
 * ✅Windows 11
 * ✅Windows 11 Sandbox
 * ✅Windows Server 2019
@@ -95,7 +95,7 @@ Run the following to solve this problem:
 Set-ExecutionPolicy RemoteSigned
 ```
 
-The `RemoteSigned` execution policy is the default policy on Windows Server deployments. 
+The `RemoteSigned` execution policy is the default policy on Windows Server deployments.
 
 * It requires a digital signature from a trusted publisher on scripts and configuration files that are downloaded from the internet.
 * It doesn't require digital signatures on scripts that are written on the local computer and not downloaded from the internet. Any unblocked scripts downloaded from the internet are treated as local scripts and therefore do not require a trusted signature.
