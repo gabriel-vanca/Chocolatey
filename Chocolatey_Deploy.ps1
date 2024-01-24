@@ -162,11 +162,21 @@ if($LocalRepository -eq $False) {
 }
 
 Write-Host "Printing Chocolatey sources list:"
+Write-Host "[START LIST]"
 choco source list
 Write-Host "[END LIST]"
 
-Write-Host "Configuring Chocolatey Updates and Cleaning"
+# Write-Host "Enable remembered arguments" -ForegroundColor DarkBlue
+# # https://github.com/chocolatey/choco/issues/797
+# # We capture the arguments passed during install/upgrade. Now we need to pass them to the upgrades automatically.
+# choco feature enable -n useRememberedArgumentsForUpgrades
+# Before enabling this, make sure the following are fixed:
+    # - https://github.com/chocolatey/choco/issues/2886
+    # - https://github.com/chocolatey/choco/issues/2761
+    # - https://github.com/chocolatey/choco/pull/3003
+    
 
+Write-Host "Configuring Chocolatey Updates" -ForegroundColor DarkBlue
 <#
  Creates a Windows Scheduled Task to run "choco upgrade all -y" with enhanced options at a time and frequency you specify
  And because sometimes package installations go wrong, it will also create a Windows Scheduled Task to
@@ -175,13 +185,16 @@ Write-Host "Configuring Chocolatey Updates and Cleaning"
 #>
 choco install choco-upgrade-all-at -y --params "'/DAILY:yes /TIME:03:00 /ABORTTIME:06:00'"
 
+
+Write-Host "Configuring Chocolatey Package Cleaning" -ForegroundColor DarkBlue
 # Set it and forget it! Choco-Cleaner cleans up your Chocolatey installation
 # every Sunday at 11 PM in the background so you don't have to be bothered with it.
 choco install choco-cleaner -y
 
-Write-Host "Installing and Configuring Chocolatey GUI"
+
+Write-Host "Installing and Configuring Chocolatey GUI" -ForegroundColor DarkBlue
 
 # Chocolatey GUI
 choco install chocolateygui -y --params "'/Global /ShowConsoleOutput=$true /PreventAutomatedOutdatedPackagesCheck=$true /DefaultToTileViewForLocalSource=$false /DefaultToTileViewForRemoteSource=$false /DefaultToDarkMode=$true'"
 
-Write-Host "Chocolatey configuration completed."
+Write-Host "Chocolatey configuration completed."  -ForegroundColor DarkGreen
