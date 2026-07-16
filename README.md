@@ -182,4 +182,6 @@ Get-ChildItem "D:\Downloads\Chocolatey" -recurse | Unblock-File
 
 You can also unblock the archive or extracted files from the **Properties** menu by ticking **Unblock** and clicking **OK** or **Apply**:
 
-![Unblock a file from its Properties menu](image/README/1692737295733.png)
+<p align="center">
+  <img src="image/README/1692737295733.png" alt="Unblock a file from its Properties menu">
+</p>
