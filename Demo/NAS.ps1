@@ -7,7 +7,8 @@ choco install seatools -y
 choco install smartmontools -y
 
 Write-Host "Installing Data Transfer tools"
-choco install resilio-sync-home -y
+# --ignore-checksums matches Core.ps1's install of this package.
+choco install resilio-sync-home -y --ignore-checksums
 
 Write-Host "Installing Data Monitoring tools"
 choco install gdu -y

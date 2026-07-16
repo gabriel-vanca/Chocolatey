@@ -9,7 +9,7 @@ This is a guided script to install and config chocolatey and deploy packages wit
 * ✅Windows 11 Sandbox
 * ✅Windows Server 2019
 * ✅Windows Server 2022
-* ✅Windows Server 2022 vNext (Windows Server 2025)
+* ✅Windows Server 2025
 
 ## ⚒️Step 1: Deploy Chocolatey
 
@@ -17,12 +17,14 @@ This is a guided script to install and config chocolatey and deploy packages wit
 ./Chocolatey_Deploy
 ```
 
+Alternatively, double-click `Chocolatey_Deploy.bat`: it self-elevates via a UAC prompt, bypasses execution-policy restrictions, and runs the local `Chocolatey_Deploy.ps1` (or downloads it from GitHub when used as a standalone single file on a bare machine).
+
 The script does the following:
 
   1. Checks whether chocolatey is already installed.
-      * Terminates the script if it is so as to avoid misconfigurations.
-  2. If it isn't installed yet, it install chocolatey.
-  3. Verifies if installation has been succesfull
+      * Skips deployment if it is, leaving the existing installation untouched.
+  2. If it isn't installed yet, it installs chocolatey.
+  3. Verifies if installation has been successful
   4. Configures the default repository as per set parameters (see below)
   5. Sets an auto-update configuration
   6. Installs a package cache cleaning utility
@@ -52,21 +54,23 @@ The script comes with 4 optional parameters:
 Examples of how to run the script with custom source settings:
 
 ```powershell
-./Chocolatey_Deploy $True "http://10.10.10.1:8624/nuget/Thoth/" "THOTH" $False
-  
+./Chocolatey_Deploy -LocalRepository -LocalRepositoryPath "http://10.10.10.1:8624/nuget/Thoth/" -LocalRepositoryName "THOTH"
 ```
 
 OR
 
 ```powershell
-./Chocolatey_Deploy $True "http://hercules.cerberus.local:8624/nuget/Hercules/" "HERCULES" $False
+./Chocolatey_Deploy -LocalRepository -LocalRepositoryPath "http://hercules.cerberus.local:8624/nuget/Hercules/" -LocalRepositoryName "HERCULES"
 ```
 
-* The exact port and form of the path for the local repository will depend on the repository software you are using.
+> [!NOTE]
+> The exact port and form of the path for the local repository will depend on the repository software you are using.
+-----
+> Note: the parameters must be passed by name, as shown. `LocalRepository` and `DisableCommunityRepository` are `[Switch]` parameters, which PowerShell never binds positionally, so the old positional form (`./Chocolatey_Deploy $True "http://..." "THOTH" $False`) fails with `A positional parameter cannot be found that accepts argument 'THOTH'`.
 
 ### 🌐Deploy Script via Network
 
-If you want to quickly get Chocolatey installed and configured without downloading the script, run the below commands to download and run the script:
+If you want to quickly get Chocolatey installed and configured without downloading the script, run the below commands from an elevated (administrator) PowerShell session to download and run the script:
 
 ```powershell
 $scriptPath = "https://raw.githubusercontent.com/gabriel-vanca/Chocolatey/main/Chocolatey_Deploy.ps1"
@@ -75,6 +79,8 @@ $deploymentScript = $WebClient.DownloadString($scriptPath)
 $deploymentScript = [Scriptblock]::Create($deploymentScript)
 Invoke-Command -ScriptBlock $deploymentScript -ArgumentList ($False, "", "", $False) -NoNewScope
 ```
+
+> Note: `-ArgumentList` binds the scriptblock's parameters strictly positionally (switches included), so keep the argument order matching the script's `param()` block: LocalRepository, LocalRepositoryPath, LocalRepositoryName, DisableCommunityRepository. The script checks for administrator privileges itself and refuses to run unelevated.
 
 ### ⚠️Troubleshooting: Running Scripts is Disabled
 
@@ -134,20 +140,22 @@ In the examples above, the repository software used is the Inedo ProGet free sof
 * The packages can be stored locally or on an SMB/NFS network share.
   * ⚠️Please make sure sufficient storage is available.
 * ProGet can install its own SQL Express database, or be configured with an external SQL database such as the free edition of Windows SQL Server.
-* The paid Inedo ProGet versions also support retention policies, LDAP/AD Integration, Load Balancing, High Availability & Automatic Failover, Multi-Site Replication and AWS/Azure Packet Cloud Storage.
+* The paid Inedo ProGet versions also support retention policies, LDAP/AD Integration, Load Balancing, High Availability & Automatic Failover, Multi-Site Replication and AWS/Azure Package Cloud Storage.
 
-## 🚇Step 3: Deploy Packets using Chocolatey
+## 🚇Step 3: Deploy Packages using Chocolatey (Optional / Demonstration)
 
-A demo .ps1 script has been included with this project to showcase how Chocolatey can be used to deploy packages, as well as how to connect to a local repository if one is present.
+This step is entirely optional: it is a demonstration of how Chocolatey can be used to deploy packages once Steps 1 and 2 are done. A demo .ps1 script has been included with this project to showcase how Chocolatey can be used to deploy packages, as well as how to connect to a local repository if one is present. The demo files live in the `Demo` directory:
 
 ```powershell
-./Chocolatey_Demo
+./Demo/Chocolatey_Demo
 ```
+
+Alternatively, double-click `Demo\Chocolatey_Demo.bat`: it unblocks the repo files and self-elevates via a UAC prompt before running the demo script.
 
 The demo script will:
 
-1. Install and configure Chocolatey
-   * therefore make sure it is not yet installed
+1. Install and configure Chocolatey using the deploy script from Step 1
+   * skipped automatically if Chocolatey is already installed
 2. Connect it to a local repository if so indicated in the prompts
 3. Installs a set of "Core" apps (zip archiver, git, dropbox etc), including as set of OS-purpose-selected (consumer vs Server) packages
 4. Installs a set dedicated apps for Server/NAS/Workstation/Laptop/Gaming, depending on the environment selected during the demo prompts.

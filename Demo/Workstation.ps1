@@ -29,10 +29,10 @@ choco install vscode -y --params "/NoDesktopIcon" #This is a system-wide install
 Write-Host "Refreshing terminal"
 # Make `refreshenv` available right away, by defining the $env:ChocolateyInstall
 # variable and importing the Chocolatey profile module.
-$env:ChocolateyInstall = Convert-Path "$((Get-Command choco).Path)\..\.."   
+$env:ChocolateyInstall = Convert-Path "$((Get-Command choco).Path)\..\.."
 Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
+# refreshenv is an alias of Update-SessionEnvironment; one call suffices.
 Update-SessionEnvironment
-refreshenv
 
 Write-Host "Installing VS Code extensions"
 code --install-extension GitHub.github-vscode-theme
