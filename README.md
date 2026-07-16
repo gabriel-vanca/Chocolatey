@@ -160,4 +160,5 @@ The demo script will:
 3. Installs a set of "Core" apps (zip archiver, git, dropbox etc), including as set of OS-purpose-selected (consumer vs Server) packages
 4. Installs a set dedicated apps for Server/NAS/Workstation/Laptop/Gaming, depending on the environment selected during the demo prompts.
 
-⚠️REMINDER: The Chocolatey_Demo.ps1 is a demo script of how to install and configure Chocolatey using the deploy script (Chocolatey_Deploy.ps1) and then use Chocolatey to install software. You HAVE TO download and configure Chocolatey_Demo.ps1 as you require it or fork the repo and edit as needed. Chocolatey_Demo.ps1 is purely for demonstrative purposes. ⚠️
+> [!WARNING]
+> The Chocolatey_Demo.ps1 is a demo script of how to install and configure Chocolatey using the deploy script (Chocolatey_Deploy.ps1) and then use Chocolatey to install software. You HAVE TO download and configure Chocolatey_Demo.ps1 as you require it or fork the repo and edit as needed. Chocolatey_Demo.ps1 is purely for demonstrative purposes.
