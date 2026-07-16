@@ -12,19 +12,17 @@ A guided script to install and configure [Chocolatey](https://chocolatey.org/) a
 
 ---
 
-## 📖Contents
+## 📖Table of Contents <!-- omit from toc -->
 
-- [Chocolatey](#chocolatey)
-  - [📖Contents](#contents)
-  - [⚒️Step 1: Deploy Chocolatey](#️step-1-deploy-chocolatey)
-    - [What the script does](#what-the-script-does)
-    - [📦Custom Source Settings](#custom-source-settings)
-    - [🌐Deploy Script via Network](#deploy-script-via-network)
-  - [🔐Step 2: Deploy Local Chocolatey Repository (Optional)](#step-2-deploy-local-chocolatey-repository-optional)
-  - [🚇Step 3: Deploy Packages (Optional Demonstration)](#step-3-deploy-packages-optional-demonstration)
-  - [⚠️Troubleshooting](#️troubleshooting)
-    - [⚠️ A. Running scripts is disabled on this system](#️-a-running-scripts-is-disabled-on-this-system)
-    - [⚠️ B. Script is blocked](#️-b-script-is-blocked)
+- [⚒️Step 1: Deploy Chocolatey](#️step-1-deploy-chocolatey)
+  - [What the script does](#what-the-script-does)
+  - [📦Custom Source Settings](#custom-source-settings)
+  - [🌐Deploy Script via Network](#deploy-script-via-network)
+- [🔐Step 2: Deploy Local Chocolatey Repository (Optional)](#step-2-deploy-local-chocolatey-repository-optional)
+- [🚇Step 3: Deploy Packages (Optional Demonstration)](#step-3-deploy-packages-optional-demonstration)
+- [⚠️Troubleshooting](#️troubleshooting)
+  - [⚠️ A. Running scripts is disabled on this system](#️-a-running-scripts-is-disabled-on-this-system)
+  - [⚠️ B. Script is blocked](#️-b-script-is-blocked)
 
 ---
 
