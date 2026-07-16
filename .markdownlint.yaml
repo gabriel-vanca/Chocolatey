@@ -1,0 +1,15 @@
+# markdownlint configuration
+default: true
+
+# MD013 (line length): prose is written one sentence-flow per line; hard-wrapping
+# at 80 columns is not wanted here. (The VS Code extension also disables this by
+# default; providing this file overrides that default, so it must be re-disabled.)
+MD013: false
+
+# MD028 (no blank line inside blockquote): GitHub-style consecutive [!NOTE]/[!TIP]
+# alerts require a blank line between the quote blocks, so this rule misfires on them.
+MD028: false
+
+# MD033 (no inline HTML): the README deliberately uses HTML (e.g. the centered
+# <p align="center"><img ...> screenshot block), which GitHub renders fine.
+MD033: false

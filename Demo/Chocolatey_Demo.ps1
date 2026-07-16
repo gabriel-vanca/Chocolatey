@@ -108,6 +108,12 @@ if (Test-Path "$Env:ProgramData/chocolatey/choco.exe") {
         $DisableCommunityRepository_ = ($disableCommunityAnswer -eq "yes")
     }
 
+    $autoUpdateAnswer = Read-ValidatedChoice -Prompt "Would you like to set up automatic daily package updates? (yes/no)" -ValidAnswers @('yes', 'no')
+    $AutoUpdate_ = ($autoUpdateAnswer -eq "yes")
+
+    $chocoGUIAnswer = Read-ValidatedChoice -Prompt "Would you like to install the Chocolatey GUI? (yes/no)" -ValidAnswers @('yes', 'no')
+    $ChocoGUI_ = ($chocoGUIAnswer -eq "yes")
+
     Write-Host "Initialising Chocolatey deployment"
 
     # The deploy script sits in the repo root, one level above this Demo directory.
@@ -119,7 +125,9 @@ if (Test-Path "$Env:ProgramData/chocolatey/choco.exe") {
             -LocalRepository:$LocalRepository_ `
             -LocalRepositoryPath $LocalRepositoryPath_ `
             -LocalRepositoryName $LocalRepositoryName_ `
-            -DisableCommunityRepository:$DisableCommunityRepository_
+            -DisableCommunityRepository:$DisableCommunityRepository_ `
+            -AutoUpdate:$AutoUpdate_ `
+            -ChocoGUI:$ChocoGUI_
     } catch {
         Write-Host "Chocolatey deployment failed: $($_.Exception.Message)" -ForegroundColor DarkRed
         Write-Host "Aborting the demo: the package installations below require a working Chocolatey." -ForegroundColor DarkRed

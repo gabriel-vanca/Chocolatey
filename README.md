@@ -16,7 +16,7 @@ A guided script to install and configure [Chocolatey](https://chocolatey.org/) a
 
 - [⚒️Step 1: Deploy Chocolatey](#️step-1-deploy-chocolatey)
   - [What the script does](#what-the-script-does)
-  - [📦Custom Source Settings](#custom-source-settings)
+  - [📦Script Parameters](#script-parameters)
   - [🌐Deploy Script via Network](#deploy-script-via-network)
 - [🔐Step 2: Deploy Local Chocolatey Repository (Optional)](#step-2-deploy-local-chocolatey-repository-optional)
 - [🚇Step 3: Deploy Packages (Optional Demonstration)](#step-3-deploy-packages-optional-demonstration)
@@ -34,7 +34,7 @@ Run the deploy script from an elevated PowerShell session:
 ./Chocolatey_Deploy
 ```
 
-Alternatively, **double-click `Chocolatey_Deploy.bat`**. It self-elevates via a UAC prompt, bypasses execution-policy restrictions, and runs the local `Chocolatey_Deploy.ps1` (or downloads it from GitHub when used as a standalone single file on a bare machine).
+Alternatively, **double-click `Chocolatey_Deploy.bat`**. It self-elevates via a UAC prompt, bypasses execution-policy restrictions, and runs the local `Chocolatey_Deploy.ps1` (or downloads it from GitHub when used as a standalone single file on a bare machine). The parameters below (including `AutoUpdate` and `ChocoGUI`) are set by editing the `Place Arguments here` section at the top of the `.bat` file.
 
 ### What the script does
 
@@ -43,13 +43,13 @@ Alternatively, **double-click `Chocolatey_Deploy.bat`**. It self-elevates via a 
 2. Installs Chocolatey if it isn't present yet.
 3. Verifies the installation succeeded.
 4. Configures the default repository from the parameters below.
-5. Sets an auto-update configuration.
-6. Installs a package cache cleaning utility.
-7. Installs the Chocolatey GUI tool.
+5. Installs a package cache cleaning utility.
+6. Sets an auto-update configuration (only with `-AutoUpdate`).
+7. Installs the Chocolatey GUI tool (only with `-ChocoGUI`).
 
-### 📦Custom Source Settings
+### 📦Script Parameters
 
-The script accepts four optional parameters. All must be passed by name.
+The script accepts six optional parameters. All must be passed by name.
 
 | Parameter | Type | Description |
 | --- | --- | --- |
@@ -57,6 +57,8 @@ The script accepts four optional parameters. All must be passed by name.
 | `-LocalRepositoryPath` | String | Full FQDN or IP, port and path of the local repository. |
 | `-LocalRepositoryName` | String | Name of the local repository. |
 | `-DisableCommunityRepository` | Switch | Disables the Community Repository entirely. Only takes effect once a valid local repository has been added. Usually unnecessary unless you are specifically concerned about the security of packages from outside your organisation. |
+| `-AutoUpdate` | Switch | Sets up automatic daily package updates via a scheduled task (`choco upgrade all` at 3 AM, aborted at 6 AM if still running). Off by default. |
+| `-ChocoGUI` | Switch | Installs the [Chocolatey GUI](https://docs.chocolatey.org/en-us/chocolatey-gui/) tool. Off by default. |
 
 > [!NOTE]
 > Using the Community Repository can run you into traffic limits in a multi-machine deployment scenario. A local repository (see [Step 2](#step-2-deploy-local-chocolatey-repository-optional)) avoids that.
@@ -64,18 +66,18 @@ The script accepts four optional parameters. All must be passed by name.
 **Examples:**
 
 ```powershell
-./Chocolatey_Deploy -LocalRepository -LocalRepositoryPath "http://10.10.10.1:8624/nuget/Thoth/" -LocalRepositoryName "THOTH"
+./Chocolatey_Deploy -LocalRepository -LocalRepositoryPath "http://10.10.10.1:8624/nuget/Thoth/" -LocalRepositoryName "THOTH" -AutoUpdate:$False -ChocoGUI:$False
 ```
 
 ```powershell
-./Chocolatey_Deploy -LocalRepository -LocalRepositoryPath "http://hercules.cerberus.local:8624/nuget/Hercules/" -LocalRepositoryName "HERCULES"
+./Chocolatey_Deploy -LocalRepository -LocalRepositoryPath "http://hercules.cerberus.local:8624/nuget/Hercules/" -LocalRepositoryName "HERCULES" -AutoUpdate:$False -ChocoGUI:$False
 ```
 
 > [!NOTE]
-> The exact port and path form for the local repository depend on the repository software you are using.
+> The exact port and path form for the local repository depend on the repository software you are using. `-AutoUpdate` and `-ChocoGUI` default to off; omitting them is equivalent to passing `:$False` as above.
 
 > [!IMPORTANT]
-> Parameters must be passed **by name**, as shown above. `-LocalRepository` and `-DisableCommunityRepository` are `[Switch]` parameters, which PowerShell never binds positionally, so the old positional form (`./Chocolatey_Deploy $True "http://..." "THOTH" $False`) fails with `A positional parameter cannot be found that accepts argument 'THOTH'`.
+> Parameters must be passed **by name**, as shown above. `-LocalRepository`, `-DisableCommunityRepository`, `-AutoUpdate` and `-ChocoGUI` are `[Switch]` parameters, which PowerShell never binds positionally, so the old positional form (`./Chocolatey_Deploy $True "http://..." "THOTH" $False`) fails with `A positional parameter cannot be found that accepts argument 'THOTH'`.
 
 ### 🌐Deploy Script via Network
 
@@ -87,15 +89,32 @@ $WebClient = New-Object Net.WebClient
 $deploymentScript = $WebClient.DownloadString($scriptPath)
 $deploymentScript = [Scriptblock]::Create($deploymentScript)
 
-# Default: use the Chocolatey Community Repository
-Invoke-Command -ScriptBlock $deploymentScript -ArgumentList ($False, "", "", $False) -NoNewScope
+# Parameters, splatted so every switch is named. Defaults below are:
+# Chocolatey Community Repository, no auto-update, no GUI.
+$deployArgs = @{
+    LocalRepository            = $False
+    LocalRepositoryPath        = ""
+    LocalRepositoryName        = ""
+    DisableCommunityRepository = $False
+    AutoUpdate                 = $False
+    ChocoGUI                   = $False
+}
 
-# Or, to use a local repository (LocalRepository, LocalRepositoryPath, LocalRepositoryName, DisableCommunityRepository):
-Invoke-Command -ScriptBlock $deploymentScript -ArgumentList ($True, "http://10.10.10.1:8624/nuget/Thoth/", "THOTH", $False) -NoNewScope
+# Default: deploy with the settings above
+. $deploymentScript @deployArgs
+```
+
+```powershell
+# Or, to use a local repository, change only the source fields first:
+$deployArgs.LocalRepository     = $True
+$deployArgs.LocalRepositoryPath = "http://10.10.10.1:8624/nuget/Thoth/"
+$deployArgs.LocalRepositoryName = "THOTH"
+
+. $deploymentScript @deployArgs
 ```
 
 > [!NOTE]
-> `-ArgumentList` binds the scriptblock's parameters strictly positionally (switches included), so keep the argument order matching the script's `param()` block: `LocalRepository`, `LocalRepositoryPath`, `LocalRepositoryName`, `DisableCommunityRepository`. The script checks for administrator privileges itself and refuses to run unelevated.
+> Dot-sourcing (`. $deploymentScript`) runs the script in the current session, so `choco` is available immediately afterward, and splatting `@deployArgs` binds every parameter **by name**, so you never have to remember positional order. The script checks for administrator privileges itself and refuses to run unelevated.
 
 ---
 
@@ -127,8 +146,9 @@ The demo script will:
 
 1. Install and configure Chocolatey using the deploy script from Step 1 (skipped automatically if Chocolatey is already installed).
 2. Connect it to a local repository, if indicated in the prompts.
-3. Install a set of "Core" apps (zip archiver, git, Dropbox, etc.), including OS-purpose-selected (consumer vs Server) packages.
-4. Install a set of apps dedicated to Server, NAS, Workstation, Laptop or Gaming, depending on the environment selected during the demo prompts.
+3. Set up automatic daily updates and install the Chocolatey GUI, if indicated in the prompts.
+4. Install a set of "Core" apps (zip archiver, git, Dropbox, etc.), including OS-purpose-selected (consumer vs Server) packages.
+5. Install a set of apps dedicated to Server, NAS, Workstation, Laptop or Gaming, depending on the environment selected during the demo prompts.
 
 > [!WARNING]
 > `Chocolatey_Demo.ps1` is **purely for demonstration**: it shows how to install and configure Chocolatey with the deploy script (`Chocolatey_Deploy.ps1`) and then use Chocolatey to install software. You HAVE TO download and configure `Chocolatey_Demo.ps1` as you require it, or fork the repo and edit it as needed.

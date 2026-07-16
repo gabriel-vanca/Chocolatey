@@ -7,9 +7,9 @@
     2. If it isn't installed yet, it installs chocolatey.
     3. Verifies if installation has been successful
     4. Configures the default repository as per set parameters (see below)
-    5. Sets an auto-update configuration
-    6. Installs a package cache cleaning utility
-    7. Installs the Chocolatey GUI tool
+    5. Installs a package cache cleaning utility
+    6. Sets an auto-update configuration (only with -AutoUpdate)
+    7. Installs the Chocolatey GUI tool (only with -ChocoGUI)
 
     Deployment tested on:
         - Windows 10
@@ -36,19 +36,29 @@
     This will only work if a valid local repository has been added.
     Usually there should be no need to use this unless you're specifically concerned
         about the security of packages from outside your organisation.
+.PARAMETER AutoUpdate
+    (Optional)
+    Sets up automatic daily package updates via the choco-upgrade-all-at package
+        (a scheduled task runs "choco upgrade all -y" at 3 AM, aborted at 6 AM).
+    Off by default.
+.PARAMETER ChocoGUI
+    (Optional)
+    Installs the Chocolatey GUI tool.
+    Off by default.
 .EXAMPLE
     To use the default Chocolatey Community Repository, run this:
-	    PS> ./Chocolatey_Deploy
+	    PS> ./Chocolatey_Deploy -AutoUpdate:$False -ChocoGUI:$False
     To use a local repository, run either of these:
-        PS> ./Chocolatey_Deploy -LocalRepository -LocalRepositoryPath "http://10.10.10.1:8624/nuget/Thoth/" -LocalRepositoryName "THOTH"
-        PS> ./Chocolatey_Deploy -LocalRepository -LocalRepositoryPath "http://hercules.cerberus.local:8624/nuget/Hercules/" -LocalRepositoryName "HERCULES"
+        PS> ./Chocolatey_Deploy -LocalRepository -LocalRepositoryPath "http://10.10.10.1:8624/nuget/Thoth/" -LocalRepositoryName "THOTH" -AutoUpdate:$False -ChocoGUI:$False
+        PS> ./Chocolatey_Deploy -LocalRepository -LocalRepositoryPath "http://hercules.cerberus.local:8624/nuget/Hercules/" -LocalRepositoryName "HERCULES" -AutoUpdate:$False -ChocoGUI:$False
+    Both -AutoUpdate and -ChocoGUI default to off; omitting them is equivalent
+        to passing :$False as above.
     Parameters must be passed by NAME when calling the script directly:
-        LocalRepository and DisableCommunityRepository are [Switch] parameters,
+        LocalRepository, DisableCommunityRepository, AutoUpdate and ChocoGUI are
+        [Switch] parameters,
         which PowerShell never binds positionally, so the old positional form
         (./Chocolatey_Deploy $True "http://..." "NAME" $False) fails with
         "A positional parameter cannot be found that accepts argument 'NAME'".
-        (Invoke-Command -ArgumentList against the downloaded script is unaffected:
-        scriptblock argument lists bind strictly in declaration order.)
     The exact port and form of the path for the local repository will depend on
         the repository software you are using.
     In the examples above, the repository software used is the Inedo ProGet free software.
@@ -69,10 +79,12 @@
 
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory = $False)] [Switch]$LocalRepository = $false,
-    [Parameter(Mandatory = $False)] [String]$LocalRepositoryPath,
-    [Parameter(Mandatory = $False)] [String]$LocalRepositoryName,
-    [Parameter(Mandatory = $False)] [Switch]$DisableCommunityRepository = $false
+    [Switch]$LocalRepository,
+    [String]$LocalRepositoryPath,
+    [String]$LocalRepositoryName,
+    [Switch]$DisableCommunityRepository,
+    [Switch]$AutoUpdate,
+    [Switch]$ChocoGUI
 )
 
 #Requires -RunAsAdministrator
@@ -95,17 +107,19 @@ if ([Environment]::OSVersion.Version.Build -ge 20348) {
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]3072
 }
 
-Write-Host "Running with the following paramters:"
+Write-Host "Running with the following parameters:"
 Write-Host "LocalRepository: $LocalRepository"
-if ($LocalRepository -eq $True) {
+if ($LocalRepository) {
     Write-Host "LocalRepositoryPath: $LocalRepositoryPath"
     Write-Host "LocalRepositoryName: $LocalRepositoryName"
     Write-Host "DisableCommunityRepository: $DisableCommunityRepository"
 }
+Write-Host "AutoUpdate: $AutoUpdate"
+Write-Host "ChocoGUI: $ChocoGUI"
 Write-Host "Starting proceedings"
 
 # Expected path of the choco.exe file.
-$chocoInstallPath = "$Env:ProgramData/chocolatey/choco.exe"
+$chocoInstallPath = "$Env:ProgramData\chocolatey\choco.exe"
 if (Test-Path "$chocoInstallPath") {
     # Return rather than throw: a throw is script-terminating for callers such as
     # Chocolatey_Demo.ps1. The existing installation is left untouched.
@@ -116,34 +130,42 @@ if (Test-Path "$chocoInstallPath") {
 Write-Host "No existing Chocolatey installation found. Beginning installation."
 
 Set-ExecutionPolicy Bypass -Scope Process -Force
-Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+try {
+    Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+} catch {
+    throw "Downloading or running the Chocolatey installer failed: $($_.Exception.Message)"
+}
 
 # Verify before the environment refresh below, so a failed install produces one clear
 # diagnostic instead of a cascade of secondary errors.
 Write-Host "Testing that choco was installed..."
 if (!(Test-Path "$chocoInstallPath")) {
-    Write-Error "Chocolatey installation failure"
     throw "Chocolatey installation failure"
 }
-choco --version
+& $chocoInstallPath --version
 Write-Host "Chocolatey installation successful" -ForegroundColor DarkGreen
 
 Write-Host "Refreshing terminal"
 # Make `refreshenv` available right away, by defining the $env:ChocolateyInstall
-# variable and importing the Chocolatey profile module.
-$env:ChocolateyInstall = Convert-Path "$((Get-Command choco).Path)\..\.."
+# variable and importing the Chocolatey profile module. choco.exe's location was
+# verified above, so the install root is known without relying on the installer
+# having updated this process's PATH.
+$env:ChocolateyInstall = "$Env:ProgramData\chocolatey"
 Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
 # refreshenv is an alias of Update-SessionEnvironment; one call suffices.
 Update-SessionEnvironment
 
+$configurationFailed = $False
+
 Write-Host "Configuring Chocolatey Sources"
 
 # Auto confirm package installations (no need to pass -y)
-choco feature enable -n allowGlobalConfirmation -y
+choco feature enable -n allowGlobalConfirmation
 # choco is a native exe: failures set $LASTEXITCODE and never throw (a try/catch
 # cannot see them), so every choco call in this script is checked explicitly.
 if ($LASTEXITCODE -ne 0) {
     Write-Warning "Enabling the allowGlobalConfirmation feature failed with exit code $LASTEXITCODE."
+    $configurationFailed = $True
 }
 
 function Write-RepositoryFailureBanner {
@@ -156,15 +178,24 @@ function Write-RepositoryFailureBanner {
 }
 
 # Configure Sources. Higher values means higher priority.
-if($LocalRepository) {
+if ($LocalRepository) {
     Write-Host "Trying to use a local repository"
-    if([string]::IsNullOrEmpty($LocalRepositoryPath)) {
+    if ([string]::IsNullOrEmpty($LocalRepositoryPath)) {
         Write-Error "The local repository path is null or empty."
         $LocalRepository = $False
-    } elseif([string]::IsNullOrEmpty($LocalRepositoryName)) {
+        $configurationFailed = $True
+    } elseif ([string]::IsNullOrEmpty($LocalRepositoryName)) {
         Write-Error "The local repository name is null or empty."
         $LocalRepository = $False
+        $configurationFailed = $True
     } else {
+        # Warn on cleartext HTTP: package payloads are then transferred unencrypted
+        # and unverified, so anyone able to intercept the traffic could tamper with
+        # them. On a trusted local LAN the practical risk is low, so this is a warning
+        # rather than a hard failure. Prefer HTTPS where the repository supports it.
+        if ($LocalRepositoryPath -match '^\s*http://') {
+            Write-Warning "The local repository path uses insecure HTTP ($LocalRepositoryPath). Prefer HTTPS; on a trusted local LAN this risk is low."
+        }
         choco source add -n $LocalRepositoryName -s $LocalRepositoryPath --priority=10
         if ($LASTEXITCODE -ne 0) {
             Write-RepositoryFailureBanner @(
@@ -173,12 +204,13 @@ if($LocalRepository) {
                 "Falling back to the Chocolatey Community Repository."
             )
             $LocalRepository = $False
+            $configurationFailed = $True
         } else {
             Write-Host "Using Chocolatey local repository $LocalRepositoryName as main source."
             # "choco source add" does not test reachability; a typo or dead server
             # still succeeds here. Verify the source serves packages before disabling
             # the community repository across a fleet.
-            if($DisableCommunityRepository) {
+            if ($DisableCommunityRepository) {
                 choco source disable -n=chocolatey
                 if ($LASTEXITCODE -ne 0) {
                     Write-RepositoryFailureBanner @(
@@ -186,6 +218,7 @@ if($LocalRepository) {
                         "choco source disable exit code: $LASTEXITCODE.",
                         "The Community Repository remains ENABLED."
                     )
+                    $configurationFailed = $True
                 } else {
                     Write-Host "Disabled Chocolatey Community Repository"
                 }
@@ -194,7 +227,7 @@ if($LocalRepository) {
     }
 }
 
-if($LocalRepository -eq $False) {
+if (-not $LocalRepository) {
     Write-Host "Using Chocolatey Community Repository as main source."
     Write-Host "Note that if you have multiple machines/VMs running on your local network, `n     you will run into the Chocolatey Community Repository traffic limit." -ForegroundColor DarkYellow
 }
@@ -209,37 +242,45 @@ Write-Host "[END LIST]"
 # issues #2886 and #2761 and PR #3003 are resolved.
 
 
-Write-Host "Configuring Chocolatey Updates" -ForegroundColor DarkBlue
-<#
- Creates a Windows Scheduled Task to run "choco upgrade all -y" with enhanced options at a time and frequency you specify
- And because sometimes package installations go wrong, it will also create a Windows Scheduled Task to
- run "taskkill /im choco.exe /f /t" to stop the Chocolatey (choco.exe) process and all child processes at a time you specify.
- Runs "choco upgrade all -y" daily at 3 AM and aborts it at 6 AM.
-#>
-choco install choco-upgrade-all-at -y --params "'/DAILY:yes /TIME:03:00 /ABORTTIME:06:00'"
-if ($LASTEXITCODE -ne 0) {
-    Write-Warning "Installing choco-upgrade-all-at failed with exit code $LASTEXITCODE. Automatic updates are NOT configured."
-    $configurationFailed = $True
-}
-
-
 Write-Host "Configuring Chocolatey Package Cleaning" -ForegroundColor DarkBlue
 # Set it and forget it! Choco-Cleaner cleans up your Chocolatey installation
 # every Sunday at 11 PM in the background so you don't have to be bothered with it.
 choco install choco-cleaner -y
-if ($LASTEXITCODE -ne 0) {
+# 1641 (reboot initiated) and 3010 (reboot required) are success exit codes for
+# choco install: usePackageExitCodes (default on) lets package codes propagate.
+if ($LASTEXITCODE -notin 0, 1641, 3010) {
     Write-Warning "Installing choco-cleaner failed with exit code $LASTEXITCODE. Package cache cleaning is NOT configured."
     $configurationFailed = $True
 }
 
 
-Write-Host "Installing and Configuring Chocolatey GUI" -ForegroundColor DarkBlue
+if ($AutoUpdate) {
+    Write-Host "Configuring Chocolatey Updates" -ForegroundColor DarkBlue
+    <#
+     Creates a Windows Scheduled Task to run "choco upgrade all -y" with enhanced options at a time and frequency you specify
+     And because sometimes package installations go wrong, it will also create a Windows Scheduled Task to
+     run "taskkill /im choco.exe /f /t" to stop the Chocolatey (choco.exe) process and all child processes at a time you specify.
+     Runs "choco upgrade all -y" daily at 3 AM and aborts it at 6 AM.
+    #>
+    choco install choco-upgrade-all-at -y --params "'/DAILY:yes /TIME:03:00 /ABORTTIME:06:00'"
+    if ($LASTEXITCODE -notin 0, 1641, 3010) {
+        Write-Warning "Installing choco-upgrade-all-at failed with exit code $LASTEXITCODE. Automatic updates are NOT configured."
+        $configurationFailed = $True
+    }
+} else {
+    Write-Host "AutoUpdate switch not set. Skipping automatic update configuration."
+}
 
-# Chocolatey GUI
-choco install chocolateygui -y --params "'/Global /ShowConsoleOutput=$true /PreventAutomatedOutdatedPackagesCheck=$true /DefaultToTileViewForLocalSource=$false /DefaultToTileViewForRemoteSource=$false /DefaultToDarkMode=$true'"
-if ($LASTEXITCODE -ne 0) {
-    Write-Warning "Installing Chocolatey GUI failed with exit code $LASTEXITCODE."
-    $configurationFailed = $True
+
+if ($ChocoGUI) {
+    Write-Host "Installing and Configuring Chocolatey GUI" -ForegroundColor DarkBlue
+    choco install chocolateygui -y --params "'/Global /ShowConsoleOutput=$true /PreventAutomatedOutdatedPackagesCheck=$true /DefaultToTileViewForLocalSource=$false /DefaultToTileViewForRemoteSource=$false /DefaultToDarkMode=$true'"
+    if ($LASTEXITCODE -notin 0, 1641, 3010) {
+        Write-Warning "Installing Chocolatey GUI failed with exit code $LASTEXITCODE."
+        $configurationFailed = $True
+    }
+} else {
+    Write-Host "ChocoGUI switch not set. Skipping Chocolatey GUI installation."
 }
 
 if ($configurationFailed) {
